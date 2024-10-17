@@ -32,7 +32,7 @@ Walmart_MONTHYEAR <- Walmart_Sales %>%
 
 SalesandEcon_df <- inner_join(CIVPART_1012, Walmart_MONTHYEAR, by="MONTHYEAR") %>%
   mutate(
-    Date = paste(DAY, MONTH, YEAR, sep="-")
+    Date = paste(YEAR, MONTH, DAY, sep="-")
   ) %>% 
   select(-MONTHYEAR, -DAY, -MONTH, -YEAR) %>%
   dplyr::rename(
