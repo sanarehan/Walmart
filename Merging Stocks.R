@@ -40,7 +40,7 @@ Competition_df <- num_df %>%
     Year = statnet.common::despace(Year)
   ) %>%
   mutate(
-    Date = paste(Day_num, Month_num, Year, sep="-")
+    Date = paste(Year, Month_num, Day_num, sep="-")
   ) %>%
   select(
     -Month_num, -Day_num, -(Month:Year)
