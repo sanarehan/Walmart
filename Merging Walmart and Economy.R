@@ -3,6 +3,8 @@ Walmart_Sales <- read_csv("C:/Users/sanar/Downloads/archive (4)/Walmart_Sales.cs
 CIVPART <- read_csv("C:/Users/sanar/Downloads/CIVPART.csv")
 
 library(tidyverse)
+library(dplyr)
+
 # I want to get the data just from 2010-2012
 CIVPART_1012 <- CIVPART %>% separate(
   col = DATE,
@@ -28,12 +30,15 @@ Walmart_MONTHYEAR <- Walmart_Sales %>%
     MONTHYEAR = paste(MONTH, YEAR, sep="-")
   )
 
-full_df <- full_join(CIVPART_1012, Walmart_MONTHYEAR) %>%
- mutate(
+SalesandEcon_df <- inner_join(CIVPART_1012, Walmart_MONTHYEAR, by="MONTHYEAR") %>%
+  mutate(
     Date = paste(DAY, MONTH, YEAR, sep="-")
   ) %>% 
   select(-MONTHYEAR, -DAY, -MONTH, -YEAR) %>%
-  rename(
+  dplyr::rename(
     Labor_Force = CIVPART
   )
-  
+
+## Now I can output SalesandEcon_df
+
+write.csv(SalesandEcon_df, file="SalesandEcon_df.csv")
