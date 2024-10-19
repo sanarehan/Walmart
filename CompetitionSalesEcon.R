@@ -1,30 +1,29 @@
 ## Merging Competition and Sales and Econ
 library(readr)
 library(tidyverse)
+library(dplyr)
 Competition_df <- read_csv("Competition_df.csv")[ , -1]
-SalesandEcon_df <- read_csv("SalesandEcon_df.csv")[ , -1]
+SalesandEcon_df <- read_csv("SalesandEcon_df.csv")[ , -1] 
 
-Combined_df <- full_join(Competition_df, SalesandEcon_df)
-
-## I just realized that the dates for SalesandEcon are by week. And the Competition dates are by day. Which means I have
-## to figure out a way to get a weekly metric for Competition. Should I do the average opening price for that week, or should
-## I just do the opening price for that specific day? Maybe I could do both? And see which models better?
-## Okay I'll do that another time, I'm good with what I have now
-## I have the idea to do Friday stock - Monday stock as a column to reflect stock performance for the week
-
-Specific_df <- SalesandEcon_df %>% inner_join(Competition_df)
-Specific_df$Store <- as.factor(Specific_df$Store)
-Specific_df$Holiday_Flag <- as.factor(Specific_df$Holiday_Flag)
-
-Specific_lm <- lm(Weekly_Sales ~., data=Specific_df)
-summary(Specific_lm)
+SalesandEcon_df$Store = as.factor(SalesandEcon_df$Store)
+SalesandEcon_df$Holiday_Flag = as.factor(SalesandEcon_df$Holiday_Flag)
 
 
-## Random Forest
-library(randomForest)
-set.seed(123)
-Specific_bag <- randomForest(Weekly_Sales ~ .-Store, data = Specific_df,
-                        mtry = 3)
-plot(Specific_bag)
-importance(Specific_bag)
-varImpPlot(Specific_bag)
+Combined_df <- inner_join(Competition_df, SalesandEcon_df)
+
+## I have the idea to do last day stock - first day stock as a column to reflect stock performance for the week
+
+Dates_tibble <- Combined_df %>%
+  filter(Store == "1") %>%
+  select(AMZN, COST, Date) %>%
+  mutate(
+    AMZNdiff = AMZN - lag(AMZN),
+    COSTdiff = COST - lag(COST)
+  )
+
+Dates_tibble$AMZNdiff[1] <- Competition_df$AMZN[30]-Dates_tibble$AMZN[1]
+Dates_tibble$COSTdiff[1] <- Competition_df$COST[30]-Dates_tibble$COST[1]
+
+Merged_df <- SalesandEcon_df %>% inner_join(Dates_tibble, by="Date")
+
+write.csv(Merged_df, file="Merged_df.csv")
